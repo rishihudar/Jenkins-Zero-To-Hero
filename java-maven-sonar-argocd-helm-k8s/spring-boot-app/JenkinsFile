@@ -9,13 +9,13 @@ pipeline {
     stage('Checkout') {
       steps {
         sh 'echo passed'
-        //git branch: 'main', url: 'https://github.com/rishihudar/Jenkins-Zero-To-Hero.git'
+        //git branch: 'main', url: 'https://github.com/rishihudar/Jenkins-ZeroToHero.git'
       }
     }
     stage('Build and Test') {
       steps {
         sh 'ls -ltr'
-        // build the project and create a JAR file
+        // Build the project and create a JAR file
         sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn clean package'
       }
     }
@@ -25,6 +25,10 @@ pipeline {
       }
       steps {
         withCredentials([string(credentialsId: 'Sonar', variable: 'SONAR_AUTH_TOKEN')]) {
+          // Clear the SonarQube cache to avoid checksum issues
+          sh 'rm -rf /root/.sonar/cache/* /root/.sonar/_tmp/*'
+          
+          // Run the SonarQube analysis
           sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}'
         }
       }
